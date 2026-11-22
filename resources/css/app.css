@@ -1,0 +1,470 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Nunito', ui-rounded, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Fredoka', 'Nunito', ui-rounded, ui-sans-serif, system-ui, sans-serif;
+
+    --color-sea-surface: oklch(0.5 0.12 232);
+    --color-sea-floor: oklch(0.11 0.03 262);
+    --color-krill: oklch(0.78 0.14 25);
+}
+
+/* Headings, buttons and badges use the bubbly display font; body text stays in rounded Nunito. */
+@layer base {
+    h1,
+    h2,
+    h3,
+    button,
+    .font-display {
+        font-family: var(--font-display);
+    }
+
+    h1,
+    h2 {
+        letter-spacing: 0.005em;
+    }
+}
+
+/*
+ * Registering --depth as a number lets it be animated, so changing it on <body> smoothly
+ * darkens the whole ocean during a descent.
+ */
+@property --depth {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0;
+}
+
+/*
+ * The ocean backdrop. Pages set --depth (0 at the surface, 1 at Challenger Deep)
+ * and the water darkens, the sunlight fades, and bioluminescence appears.
+ */
+@layer components {
+    .sea {
+        min-height: 100vh;
+        transition: --depth 2.6s cubic-bezier(0.45, 0, 0.2, 1);
+        background-color: var(--color-sea-floor);
+        background-image:
+            radial-gradient(ellipse 80% 40% at 50% -10%, rgb(255 255 255 / calc((1 - var(--depth)) * 0.28)), transparent),
+            linear-gradient(
+                to bottom,
+                color-mix(in oklch, var(--color-sea-surface), var(--color-sea-floor) calc(var(--depth) * 100%)),
+                color-mix(in oklch, var(--color-sea-surface), var(--color-sea-floor) calc(min(1, var(--depth) + 0.4) * 100%))
+            );
+        background-attachment: fixed;
+    }
+
+    .bubble {
+        position: absolute;
+        bottom: -3rem;
+        border-radius: 9999px;
+        border: 1px solid rgb(255 255 255 / 0.35);
+        background: radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.04) 60%);
+        animation: bubble-rise linear infinite;
+    }
+
+    .glow-speck {
+        position: absolute;
+        border-radius: 9999px;
+        opacity: calc(var(--depth) * 0.9);
+        box-shadow: 0 0 12px 3px currentColor;
+        background: currentColor;
+        animation: glow-pulse ease-in-out infinite alternate;
+    }
+
+    /* Creatures crossing the screen. Each sets --swim-duration, --swim-delay and a --rest-x for reduced motion. */
+    .swim {
+        left: 0;
+        animation: swim-right var(--swim-duration, 30s) linear var(--swim-delay, 0s) infinite;
+    }
+
+    .swim-left {
+        animation-name: swim-left;
+    }
+
+    .bob {
+        animation: bob var(--bob-duration, 8s) ease-in-out infinite alternate;
+    }
+
+    .marine-snow {
+        position: absolute;
+        top: -2rem;
+        border-radius: 9999px;
+        background: rgb(226 232 240 / 0.55);
+        animation: snow-fall linear infinite;
+    }
+
+    .sink-in {
+        animation: sink-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    /* The dive between questions. */
+    .descent-move {
+        transition:
+            top 2.6s cubic-bezier(0.45, 0, 0.2, 1),
+            height 2.6s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    .descent-streaks {
+        animation: descent-fade 2.8s ease-out forwards;
+    }
+
+    .descent-streak {
+        position: absolute;
+        bottom: -20vh;
+        border-radius: 9999px;
+        background: linear-gradient(to top, rgb(255 255 255 / 0), rgb(255 255 255 / 0.55));
+        animation: streak-rise linear 3 both;
+    }
+
+    .arrive-in {
+        animation: arrive-in 2.4s ease-out both;
+    }
+
+    .zone-banner {
+        animation: zone-banner 3.6s ease-in-out 0.6s both;
+    }
+
+    [data-dive-card].is-diving {
+        animation: dive-out 0.45s cubic-bezier(0.55, 0, 0.75, 0.2) forwards;
+    }
+
+    .rarity-fill {
+        animation: rarity-grow 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both;
+    }
+
+    /* Rarity colours glow around caught fish; Mythic shimmers through every colour. */
+    .catch-glow {
+        filter: drop-shadow(0 0 10px color-mix(in oklch, currentColor 70%, transparent));
+    }
+
+    .rarity-mythic {
+        animation: mythic-shimmer 4s linear infinite;
+    }
+
+    /* The fishing line: the reel spins while line is let out, and the bobber sways on the end. */
+    .reel-spin {
+        animation: reel-spin 2.6s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    .lure-sway {
+        transform-origin: top center;
+        animation: lure-sway 5s ease-in-out infinite alternate;
+    }
+
+    .suggestion-pop {
+        animation: suggestion-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    /* The question countdown: each second the number pops and an air bubble escapes the ring. */
+    .timer-ring {
+        transition: stroke 0.3s ease;
+    }
+
+    .timer-seconds.is-ticking {
+        animation: timer-tick 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .timer-bubble.is-rising {
+        animation: timer-bubble 0.9s ease-out;
+    }
+
+    .timer[data-urgency='critical']:not(.is-stopped) {
+        animation: timer-pulse 1s ease-in-out infinite;
+    }
+
+    .timer.is-expired {
+        animation: timer-shake 0.4s ease-in-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .timer-seconds.is-ticking,
+        .timer-bubble.is-rising,
+        .timer[data-urgency='critical']:not(.is-stopped),
+        .timer.is-expired {
+            animation: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bubble,
+        .glow-speck,
+        .bob,
+        .marine-snow,
+        .sink-in,
+        .arrive-in,
+        .rarity-fill,
+        .rarity-mythic,
+        .reel-spin,
+        .lure-sway,
+        .suggestion-pop,
+        [data-dive-card].is-diving {
+            animation: none;
+        }
+
+        .sea,
+        .descent-move {
+            transition: none;
+        }
+
+        .descent-streaks {
+            display: none;
+        }
+
+        .zone-banner {
+            animation: zone-banner-still 3s ease-in-out both;
+        }
+
+        .bubble {
+            display: none;
+        }
+
+        .swim {
+            animation: none;
+            transform: translateX(var(--rest-x, 40vw));
+        }
+
+        .swim-left {
+            transform: translateX(var(--rest-x, 40vw)) scaleX(-1);
+        }
+    }
+}
+
+@keyframes swim-right {
+    from {
+        transform: translateX(-110%);
+    }
+
+    to {
+        transform: translateX(100vw);
+    }
+}
+
+@keyframes swim-left {
+    from {
+        transform: translateX(100vw) scaleX(-1);
+    }
+
+    to {
+        transform: translateX(-110%) scaleX(-1);
+    }
+}
+
+@keyframes bob {
+    from {
+        transform: translateY(-14px);
+    }
+
+    to {
+        transform: translateY(18px);
+    }
+}
+
+@keyframes snow-fall {
+    from {
+        transform: translate(0, 0);
+    }
+
+    to {
+        transform: translate(2rem, 110vh);
+    }
+}
+
+@keyframes streak-rise {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-140vh);
+    }
+}
+
+@keyframes descent-fade {
+    0%,
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes arrive-in {
+    0%,
+    35% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes zone-banner {
+    0% {
+        opacity: 0;
+        transform: translateX(1.5rem);
+    }
+
+    15%,
+    80% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(1rem);
+        visibility: hidden;
+    }
+}
+
+@keyframes zone-banner-still {
+    0%,
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@keyframes dive-out {
+    to {
+        opacity: 0;
+        transform: translateY(3rem) scale(0.97);
+    }
+}
+
+@keyframes suggestion-pop {
+    from {
+        opacity: 0;
+        transform: translateY(0.4rem);
+    }
+}
+
+@keyframes mythic-shimmer {
+    to {
+        filter: hue-rotate(360deg);
+    }
+}
+
+@keyframes reel-spin {
+    to {
+        transform: rotate(1080deg);
+    }
+}
+
+@keyframes lure-sway {
+    from {
+        transform: rotate(-4deg);
+    }
+
+    to {
+        transform: rotate(4deg);
+    }
+}
+
+@keyframes rarity-grow {
+    from {
+        width: 0;
+    }
+}
+
+@keyframes timer-tick {
+    from {
+        transform: scale(1.35);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes timer-bubble {
+    from {
+        opacity: 0.9;
+        transform: translate(-50%, 0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(-50%, -1.75rem) scale(1.6);
+    }
+}
+
+@keyframes timer-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 transparent);
+    }
+
+    50% {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 8px currentColor);
+    }
+}
+
+@keyframes timer-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+@keyframes sink-in {
+    from {
+        opacity: 0;
+        transform: translateY(-2.5rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bubble-rise {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(var(--drift, 1.5rem), -115vh);
+        opacity: 0;
+    }
+}
+
+@keyframes glow-pulse {
+    from {
+        transform: scale(0.6);
+        filter: brightness(0.7);
+    }
+
+    to {
+        transform: scale(1.1);
+        filter: brightness(1.2);
+    }
+}
