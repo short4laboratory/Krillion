@@ -1,9 +1,3 @@
-{{--
-    The final catch: after the seventh answer, show what it scored for a few seconds before the results,
-    laid out like the question pages with a countdown ring beside the catch. resources/js/auto-advance.js
-    moves on when it runs out; without JavaScript the meta refresh does it. Reloading the same URL shows
-    the results, because the reveal is only flashed for one request.
---}}
 @php
     $meters = $dive->depthInMeters();
     $resultsUrl = route('dives.show', $dive);
